@@ -18,16 +18,19 @@ class cd:
 
 
 def make_tag(tag_name, tag_info):
-
-    with open('repo.json', 'r') as load_f:
-        repo = json.load(load_f)
-        projects = repo['submodules']
-
-    for sub_project in projects:
-        if not os.path.exists(sub_project['path']):
+    repos = {}
+    projects = []
+    for subdir in os.listdir(r"depends"):
+        dir_path = os.path.join(r"depends/", subdir)
+        if os.path.isfile(dir_path):
             continue
-        with cd(sub_project['path']):
-            new_tag = {}
+        new_tag = {}
+        print(dir_path)
+        new_tag["dir"] = subdir
+        with cd(dir_path):
+            with os.popen('git config --get remote.origin.url') as pipe:
+                repo = pipe.read()
+                new_tag['repo'] = repo
             with os.popen('git symbolic-ref --short -q HEAD') as pipe:
                 branch = pipe.read()
                 print(branch)
@@ -35,15 +38,15 @@ def make_tag(tag_name, tag_info):
             with os.popen('git rev-parse HEAD') as pipe:
                 commit_id = pipe.read()
                 print(commit_id)
-                new_tag['commit'] = commit_id
-            sub_project['tag'] = new_tag
+                new_tag['commit'] = commit_id.replace('\n')
+        projects.append(new_tag)
 
-    with open('repo.json', 'w') as save_f:
-        repo['submodules'] = projects
-        json.dump(repo, save_f)
+    with open(r"depends/repo.json", 'w') as save_f:
+        repos['submodules'] = projects
+        json.dump(repos, save_f, sort_keys=True, indent=4)
+    print(json.dumps(repos, sort_keys=True, indent=4))
 
-    print(repo)
-    os.system('git add repo.json')
+    os.system('git add depends/repo.json')
     os.system('git commit -m ' + '"' + tag_info + '"')
     os.system('git push')
     cmd = 'git tag -a ' + tag_name + ' -m ' + '"' + tag_info + '"'
