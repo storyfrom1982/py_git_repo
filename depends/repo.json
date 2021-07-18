@@ -1,3 +1,10 @@
 {
-    "submodules": []
+    "submodules": [
+        {
+            "branch": "v1.x",
+            "commit": "70d2832c0de306abc86ca06b751a7ed5ac0e525d",
+            "dir": "spdlog",
+            "repo": "https://github.com/storyfrom1982/spdlog.git"
+        }
+    ]
 }
