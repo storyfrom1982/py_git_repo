@@ -17,22 +17,19 @@ class cd:
 
 
 if __name__ == "__main__":
-    with open('repo.json', 'r') as load_f:
+    with open('depends/repo.json', 'r') as load_f:
         repo = json.load(load_f)
-        projects = repo['submodules']
-    for sub_project in projects:
-        if os.path.exists(sub_project['path']):
-            with cd(sub_project['path']):
-                os.system('git reset --hard')
-                os.system('git checkout ' + sub_project['tag']['branch'])
-                os.system('git pull')
-            continue
-        cmd = 'git clone ' + sub_project['repo'] + ' ' + sub_project['path']
-        print(cmd)
-        os.system(cmd)
-        with cd(sub_project['path']):
-            os.system('git checkout ' + sub_project['tag']['branch'])
+        submodules = repo['submodules']
+
+    for submodule in submodules:
+        submodule_path = os.path.join('depends/', submodule['name'])
+        if not os.path.exists(submodule_path):
+            os.system('git clone ' + submodule['repo'] + ' ' + submodule_path)
+
+        with cd(submodule_path):
+            os.system('git checkout ' + submodule['branch'])
             os.system('git pull')
-        continue
+            os.system('git reset --hard ' + submodule['commit'])
+            os.system('git status')
 
 

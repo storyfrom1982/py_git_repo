@@ -21,22 +21,24 @@ def check_tag(tag_name):
 
     os.system('git checkout ' + tag_name)
 
-    with open('repo.json', 'r') as load_f:
+    with open('depends/repo.json', 'r') as load_f:
         repo = json.load(load_f)
-        projects = repo['submodules']
+        submodules = repo['submodules']
 
-    for sub_project in projects:
-        if not os.path.exists(sub_project['path']):
-            continue
-        with cd(sub_project['path']):
-            tag = sub_project['tag']
-            os.system('git checkout ' + tag['branch'])
-            os.system('git reset --hard ' + tag['commit'])
+    for submodule in submodules:
+        submodule_path = os.path.join('depends/', submodule[r'name'])
+        if not os.path.exists(submodule_path):
+            os.system('git clone ' + submodule['repo'] + ' ' + submodule_path)
+
+        with cd(submodule_path):
+            os.system('git checkout ' + submodule['branch'])
+            os.system('git pull')
+            os.system('git reset --hard ' + submodule['commit'])
             os.system('git status')
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:
-        print("is not set tag name")
+        print(r"is not set tag name")
         exit(0)
     check_tag(sys.argv[1])
